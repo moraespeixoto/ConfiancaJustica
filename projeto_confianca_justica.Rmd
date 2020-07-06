@@ -1,0 +1,369 @@
+---
+title: "Confianca na Justica"
+author: "Vitor Peixoto"
+date: "06/07/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, include=FALSE}
+## install.packages("gganimate")
+# install.packages("gifski")
+# install.packages("ggthemes")
+# install.packages("ggridges")
+#install.packages("Rtools")
+#install.packages("contrib.url")
+
+#library(contrib.url)
+library(tidyverse)
+library(car)
+library(ggthemes)
+library(gganimate)
+library(gifski)
+library(transformr)
+#library(png)
+library(ggridges)
+
+
+source("http://pcwww.liv.ac.uk/~william/R/crosstab.r")
+
+# library(citr)
+
+lap <- read.csv("C:/Users/Uenf/Documents/Confianca_justica/ConfiancaJustica/lapop_uni2.csv")
+
+
+lap$b1 <- as.numeric(lap$b1) 
+lap$b1 <- recode(lap$b1, "988888 = NA; 888888 = NA")
+
+lap$jud <- lap$b1
+lap$jud <- recode(lap$jud, "988888 = NA; 888888 = NA")
+
+table(lap$b1)
+
+lap$b10a <- recode(lap$b10a, " 988888 = NA; 888888 = NA")
+
+lap$ing4 <- recode(lap$ing4, " 988888 = NA; 888888 = NA")
+
+
+
+lap$jel <- as.numeric(lap$b11)
+lap$jel <- recode(lap$jel, " 988888 = NA; 888888 = NA")
+
+lap$stf <- as.numeric(lap$b31)
+lap$stf <- recode(lap$stf, " 988888 = NA; 888888 = NA")
+
+# b_dep <- lap %>% group_by(year) %>% summarise(STF = mean(stf, na.rm = TRUE),
+ #                                        TSE = mean(jel, na.rm = TRUE),
+  #                                       Justica_Brasileira = mean(b10a, na.rm = TRUE),
+   #                                      Julgamento_Justo = mean(b1, na.rm = TRUE))
+
+
+
+
+
+
+lap$Brasil <- c("Brasil")
+```
+
+## 1 - Introdução
+
+Desde a promulgação da Constiuição de 1988 até a campanha eleitoral de 2018 que consagrou Jair Messias Bolsonaro Presidente do Brasil, as instituições do Poder Judiciário foram alvos de intensos ataques oriundos de todo o espectro ideológico. São numerosos os exemplos: pela esquerda, os casos da Ação Penal 470 popularmente conhecida por "Mensalão", a Lava-Jato; pela extrema direita, o caso do "Jipe com um soldado e cabo" segundo um dos filhos do Presidente necessários para fechar o STF, ou mesmo as hienas no video divulgado pelo próprio Bolsonaro, bem como as diversas manifestações populares fomentadas pelo "Gabinete do Ódio" que pedem o fechamento do Supremo Tribunal Federal.
+
+Escândalos entre os membros do próprio poder judiciário também são não faltam, como episódeos da venda de sentenças em diversos Tribunais de Justiça Estaduais, vazamentos de conluio entre juizes de primeira instância e procuradores do Ministério Público Federal com direito a falsificaão de provas e "monetização" das operações como forma de enriquecimento pessoal que ficou mundialmente conhecido como "Vaza-Jato". 
+
+O fato é que, mesmo com uma instituição responsável pelo controle externo (ainda que composta por membros internos) como o Conselho Nacional de Justiça, o sistema judicial brasileiro não tem sido apontado pela literatura como umas das instituições mais avaliadas e confiáveis pelos cidadãos [inserir citações...].
+
+O objeto central deste trabalho é exatamente a visão dos brasileiros sobre o seu sistema judicial. A questão de pesquisa que norteia os esforços aqui empreendidos pode ser resumida da seguinte forma: existe um padrão sociológico dos cidadãos no que se refere à confiança das instituições jurídicas brasileiras?
+
+
+## 2 - Objetivos
+
+Este trabalho tem por objetivo introduzir as análises sistemáticas acerca da confiança dos brasieliros nas instituições judiciais no período compreendido entre 2006 e 2018 por meio dos surveys realizados pelo Latin American Public Opinion Project (LAPOP). 
+
+Especificamente, buscar-se-á descrever as variáveis dependentes e relacioná-las às características individuais dos respondentes tais como cor, sexo, escolaridade, renda, percepações da economia e ter sido vítimas de crimes. 
+
+## 3 - Metodologia
+
+As análises aqui empreendidas farão uso de métodos quantitivos com uso intensivo do programa R para produzir análsies descritivas longitudinais das distribuições das variáveis dependentes ao longo do tempo, assim como testes estatísticos para as respectivas relações com as variávies independentes.
+
+#### 3.1 - Variáveis dependentes
+
+Serão quatro atitudes dos brasileiros analisadas como variáveis dependentes. As variáveis a serem descritas e explicadas se referem à crença de julgamentos justos pelos tribunais de justiça, confiança na justiça brasileira e duas instituiões específicas(TSE e STF):
+
+ - **Confiança em julgamentos justos  (B1)**
+ - **Confiança na Justiça Brasileira (B10a)**
+ - **Confiança na Justiça Eleitoral (B11)**
+ - **Confiança no Supremo Tribunal Federal (B31)**
+ 
+```{r, echo=FALSE}
+
+
+lap %>% group_by(year) %>% 
+  summarise(STF = mean(stf, na.rm = TRUE),
+            TSE = mean(jel, na.rm = TRUE),
+            Justica_Brasileira = mean(b10a, na.rm = TRUE),
+            Julgamento_Justo = mean(b1, na.rm = TRUE)) 
+```
+ 
+ 
+#### 3.2 - Variáveis independentes
+
+   - **Sexo (Q1)**
+   - **Renda (VS18, Q10 e Q10NEW)**
+   - **Escolaridade (VS2 e ED)**
+   - **Cor (VS20 e ETID)**
+   - **Relião (VS18, Q3, Q3C, Q3CN)**
+   - **Vitima de crime (VIC1EXT)**
+   - **Avaliação egotrópica da economia (IDIO2)**
+   - **Avaliação sociotrópica da economia (SOCT2)**
+   - **Auto localização no eixo ideológico Direia-Esquerda (L1)**
+   
+   
+   
+#### 3.3 - Desafio metodológico
+
+Desde a primeira edição no Brasil, o Lapop incluiu diversas perguntas relativas às instituições judiciais brasileiras. Nem todas as peguntas permaneceram em todas as rodadas, ainda que permaneçam com a mesma metodologia de escala likert de avaliação (de 1 a 7 onde as pessoas se posicionam).
+
+Os mesmo pode ser dito a respeito as variáveis independentes, que ou modificam o enunciado da questão ou mudam-se as opções. Portanto, será um desafio modelar análises longitudinais a partir de questionários que possuem muitas alterações. 
+
+
+## 4 - Julgamento justo dos Tribunais de Justiça 
+
+A única pergunta que foi inserida em todas as rodadas foi quanto à percepção de julgamentos justos. A pergunta foi realizada da seguinte forma:
+
+** B1. Até que ponto o(a) sr./sra. acredita que os tribunais de justiça do Brasil garantem um julgamento justo?   (Leia: Se o(a) sr./sra. acredita que os tribunais não dão garantia nenhuma de um julgamento justo, escolha o número 1; se crê que os tribunais garantem muito bem um julgamento justo, escolha o número 7, ou escolha uma pontuação intermediária)**
+
+A distribuição percentual entre as categorias nos respectivos anos pode ser observada abaixo:
+
+```{r, echo= FALSE}
+
+crosstab(lap, row.vars = "year", col.vars = "jud", type = "r")
+
+
+```
+
+
+
+```{r, echo=FALSE}
+ggplot(lap) +
+  aes( y = jud, x = as.factor(year)) +
+  geom_boxplot() +
+  theme_economist() +
+  ggtitle("Confiança no julgamento justo no Brasil")+
+  xlab("Ano")+
+  ylab("Nota de 1 a 7")
+
+
+ggplot(lap) +
+  aes(x = jud, fill = as.factor(year)) +
+  geom_density(alpha = 0.4)+
+  ggtitle("Distribuição da confiança julgamento justo por ano")+
+  theme(legend.position="bottom")
+
+
+ggplot(lap) +
+  aes(x = jud, y = as.factor(year), fill = stat(x)) +
+  geom_density_ridges_gradient()+
+  scale_fill_gradient(low="red", high="blue")+
+  ggtitle("Distribuição da confiança julgamento justo por ano")+
+  theme(legend.position="bottom")
+
+
+julgamento_justo <- ggplot(lap) +
+    aes(x = jud, y = as.factor(Brasil), fill=stat(x)) +
+    geom_density_ridges_gradient()+
+    scale_fill_gradient(low="red", high="green")+
+    ggtitle("Confinça em Julgamento Justo no Tribunal de Justiça")+
+    theme(legend.position="bottom")+
+    transition_time(year)+ 
+    ease_aes('cubic-in-out')+ 
+    labs(subtitle = "year: {frame_time}")
+  julgamento_justo
+
+
+  
+ 
+```
+
+
+### 4.1 -  Curva de densidade por sexo
+
+Uma importante questão analitica que se coloca refere-se a uma possível diferença entre as avaliações da efetividade da justiça de acordo com o sexo do indivíduo. Para analisar esta questão propoem-se a investigar a distribuição da curva de densidade da distribuição dos sexos masculinos e femininos.
+
+```{r, echo=FALSE}
+ggplot(lap) +
+  aes(x = jud, fill= as.factor(q1)) +
+  geom_density(alpha= 0.4) +
+  xlab("Nota de 1 a 7") + 
+  theme_economist() +
+  facet_wrap(~year) +
+  ggtitle("Distribuição da avaliação da justiça por sexo")
+
+```
+
+Como se pode notar, as curvas aparentemente não tem grandes diferenças. Cabe indagar se permancem desta forma em análises multivariadas.
+
+
+
+
+
+## 5 -  Confiança na Justiça 
+
+Apesar de excluída das duas ultimas rodadas, a pergunta sobre confiança na Justiça Brasileira foi para o campo entre os anos de 2006 e 2014. 
+
+```{r, echo=FALSE}
+
+crosstab(lap, row.vars = "year", col.vars = "b10a", type = "r") 
+```
+
+
+
+
+```{r, echo=FALSE}
+
+ggplot(lap) +
+  aes( y = b10a, x = as.factor(year)) +
+  geom_boxplot() +
+  theme_economist() +
+  ggtitle("Confiança na Justiça no Brasil")+
+  xlab("Ano")+
+  ylab("Nota de 1 a 7")
+
+
+ggplot(lap) +
+  aes(x = b10a, fill = as.factor(year)) +
+  geom_density(alpha = 0.4)+
+  ggtitle("Distribuição da confiança na Justiça por ano")+
+  theme(legend.position="bottom")
+
+
+lap$year <- as.numeric(lap$year)
+
+sub_lap <- lap %>%  filter(year < 2016)
+
+
+
+
+
+ggplot(sub_lap) +
+  aes(x = b10a, fill = as.factor(q1)) +
+  geom_density(alpha = 0.4)+
+  ggtitle("Distribuição da confiança na Justiça por ano e sexo")+
+  theme(legend.position="bottom") + 
+  facet_wrap(~year)
+
+```
+
+
+## 6 - Confiança na Justiça Eleitoral (2006 a 2012)
+
+A pergunta relativa à justiça eleitoral foi experimentada no campos apenas em quatro rodadas entre os anos de 2006 e 2012. Especificamente, o instrumento foi elaborado na mesma bateria das demais instituições com notas variando de 1 a 7 e com a redação da seguinte forma:
+
+ B10A. Até que ponto o(a) sr./sra. tem confiança na justiça?
+
+
+```{r, echo=FALSE}
+
+laptse <- filter(lap, year < 2013)
+
+  crosstab(laptse, row.vars = "year", col.vars = "jel", type = "r")
+
+
+```
+
+
+```{r, echo=FALSE}
+
+  ggplot(laptse) +
+                   aes(x = as.factor(year), y = jel) +
+                   geom_boxplot() +
+                   ggtitle("Confiança na Justiça Eleitoral por ano") +
+                   theme_economist()
+```
+
+
+
+
+
+```{r, echo=FALSE}
+
+ggplot(laptse) +
+  aes(x= jel, fill = as.factor(year))+
+  geom_density(alpha = 0.6) +
+  ggtitle("Confinaça na Justiça Eleitoral") +
+  theme_fivethirtyeight()
+
+```
+
+
+
+```{r, echo=FALSE}
+
+ggplot(laptse) +
+  aes(x= as.factor(year), y = jel, fill = as.factor(q1))+
+  geom_boxplot() +
+  ggtitle("Confiança na Justiça Eleitoral por sexo")
+  
+
+```
+
+
+```{r, echo=FALSE}
+ggplot(laptse)+
+  aes(x = jel, fill = as.factor(q1)) +
+  geom_density()+
+  facet_wrap(~year)+
+  theme_fivethirtyeight()
+
+```
+
+
+## 7 - Confiança no Supremo Tribunal Federal 
+
+
+
+```{r, echo=FALSE}
+
+lapstf <- lap %>% filter(year < 2013 | year > 2017)
+
+crosstab(lapstf, row.vars = "year", col.vars = "b31", type = "r")
+
+
+
+```
+
+
+```{r, echo=FALSE}
+
+ggplot(lapstf)+
+  aes(x= as.factor(year), y = b31)+
+  geom_boxplot()+
+  ggtitle("Confiança no Superior Tribunal Federal")+
+  theme_economist()
+```
+
+
+
+```{r, echo=FALSE}
+
+ggplot(lapstf)+
+  aes(x= b31, fill = as.factor(q1))+
+  geom_density(alpha = 0.6)+
+  facet_wrap(~year)+
+  theme_fivethirtyeight()+
+  ggtitle("Confiança no Supremo Tribunal Federal")
+  
+  
+
+
+```
+
+
+## 8 - Bibliografia
+
+
